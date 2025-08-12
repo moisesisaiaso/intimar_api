@@ -24,6 +24,25 @@ exports.createClient = async (req, res) => {
       }
     }
 
+
+    let clientEmail = await Client.findOne({
+      where: { email: req.body.email },
+      paranoid: false  // Incluir registros eliminados lógicamente
+    });
+
+    if (clientEmail) {
+      if (clientEmail.deletedAt) {
+        // Cliente encontrado y eliminado, restaurar y actualizar
+        await clientEmail.restore();
+        await clientEmail.update(req.body);
+        return res.status(200).json({
+          message: "Cliente restaurado y actualizado correctamente!",
+          data: clientEmail
+        });
+      } else {
+        return res.status(400).send({ message: "El correo ya está en uso." });
+      }
+    }
     // Crear nuevo cliente si no se encontró un cliente existente
     client = await Client.create(req.body);
     return res.status(201).json({
