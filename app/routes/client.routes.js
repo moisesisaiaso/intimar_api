@@ -13,7 +13,12 @@ module.exports = function (app) {
 
   app.get(
     "/intimar/client",
-    controller.allClients);
+    [
+      authJwt.verifyToken,
+      authJwt.checkRoles(["administrador", "recepcionista", "anfitrion"]),
+    ],
+    controller.allClients
+  );
 
   app.post(
     "/intimar/client",
